@@ -7,10 +7,10 @@ import Client.Model.World;
 
 import static Client.Constants.*;
 
-public class mapUnit {
+public class MapUnit {
     private int hazardOrEffectivenessRate;
 
-    public mapUnit(Unit unit, World world) { // first we calculate the hazard rate or effectiveness rate of map units
+    public MapUnit(Unit unit, World world) { // first we calculate the hazard rate or effectiveness rate of map units
         int distanceRate, hpRate, damageRate, rangeRate, targetRate = 0;
 
         //distance rate :

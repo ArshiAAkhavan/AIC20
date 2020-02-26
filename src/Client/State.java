@@ -11,7 +11,7 @@ public class State {
     private int kingHP;
     private int AP;
     private int opponentKingHP;
-    private ArrayList<mapUnit> mapUnits;
+    private ArrayList<MapUnit> mapUnits;
     private ArrayList<Action> actions;
 
     public State(World world) {
@@ -20,7 +20,7 @@ public class State {
         this.opponentKingHP = world.getFirstEnemy().getHp() / KING_HP_DELIMITER + 1;
         mapUnits = new ArrayList<>();
         for (Unit unit : world.getMap().getUnits()) {
-            mapUnits.add(new mapUnit(unit, world));
+            mapUnits.add(new MapUnit(unit, world));
         }
         actions = new ArrayList<>();
         //todo set initial actions
@@ -50,11 +50,11 @@ public class State {
         this.AP = AP;
     }
 
-    public ArrayList<mapUnit> getMapUnits() {
+    public ArrayList<MapUnit> getMapUnits() {
         return mapUnits;
     }
 
-    public void setMapUnits(ArrayList<mapUnit> mapUnits) {
+    public void setMapUnits(ArrayList<MapUnit> mapUnits) {
         this.mapUnits = mapUnits;
     }
 
