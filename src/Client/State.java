@@ -17,17 +17,17 @@ public class State {
     private ArrayList<MapUnit> mapUnits;
     private ArrayList<Action> actions;
 
-    public State(World world) {
+    public State(World world, Player closestEnemy) {
         this.myKingHP = world.getMe().getKing().getHp() / KING_HP_DELIMITER + 1;
-        this.opponentKingHP = world.getFirstEnemy().getHp() / KING_HP_DELIMITER + 1;
+        this.opponentKingHP = closestEnemy.getHp() / KING_HP_DELIMITER + 1;
 
-        this.gameStatus = setGameStatusForSingleGame(world.getMe().getKing().getHp(), world.getFirstEnemy().getKing().getHp(), world.getCurrentTurn());
+        this.gameStatus = setGameStatusForSingleGame(world.getMe().getKing().getHp(), closestEnemy.getKing().getHp(), world.getCurrentTurn());
 
         this.AP = world.getMe().getAp();
 
         mapUnits = new ArrayList<>();
         for (Unit unit : world.getMap().getUnits()) {
-            mapUnits.add(new MapUnit(unit, world));
+            mapUnits.add(new MapUnit(unit, world, closestEnemy));
         }
 
         actions = new ArrayList<>();
@@ -55,6 +55,19 @@ public class State {
         }
         //dont using unit
         actions.add(new Action());
+    }
+
+    public String toString() {
+        ArrayList<String> actionStrings = new ArrayList<>();
+        for (Action action : actions) {
+            actionStrings.add(action.toString());
+        }
+        return "my king hp :" + myKingHP + '\n' +
+                "my AP :" + AP + '\n' +
+                "my opponent king hp :" + opponentKingHP + '\n' +
+                "game status :" + gameStatus.toString() + '\n' +
+                "actions :" + actionStrings.toString();
+
     }
 
     public int getOpponentKingHP() {

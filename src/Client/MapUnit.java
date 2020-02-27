@@ -10,12 +10,12 @@ import static Client.Constants.*;
 public class MapUnit {
     private int hazardOrEffectivenessRate;
 
-    public MapUnit(Unit unit, World world) { // first we calculate the hazard rate or effectiveness rate of map units
+    public MapUnit(Unit unit, World world, Player closestEnemy) { // first we calculate the hazard rate or effectiveness rate of map units
         int distanceRate, hpRate, damageRate, rangeRate, targetRate = 0;
 
         //distance rate :
         if (unit.getPlayerId() == world.getMe().getPlayerId()) {
-            distanceRate = calculateShortestPath(world, world.getFirstEnemy(), unit);
+            distanceRate = calculateShortestPath(world, closestEnemy, unit);
         } else {
             distanceRate = calculateShortestPath(world, world.getMe(), unit);
         }
@@ -51,7 +51,7 @@ public class MapUnit {
             }
 
         hazardOrEffectivenessRate = (distanceRate * hpRate * damageRate * rangeRate * targetRate) / MAP_UNIT_HAZARD_EFFECTIVENESS_DELIMITER + 1;
-        if (unit.getPlayerId() == world.getFirstEnemy().getPlayerId()) {
+        if (unit.getPlayerId() == closestEnemy.getPlayerId()) {
             hazardOrEffectivenessRate *= -1;
         }
     }
@@ -64,7 +64,7 @@ public class MapUnit {
         this.hazardOrEffectivenessRate = hazardOrEffectivenessRate;
     }
 
-    public int calculateShortestPath(World world, Player player, Unit unit) {
+    public static int calculateShortestPath(World world, Player player, Unit unit) {
         int length = 0;
         for (Cell cell : world.getShortestPathToCell(player, unit.getCell()).getCells()) {
             length++;

@@ -25,7 +25,13 @@ public class Action {
         this.futureMovement = new ArrayList<>();
     }
 
-    public int calculateReward(State lastState, State thisState, Player me, Player opponent) {
+    public String toString() {
+        return "probability = " + probability + '\n' +
+                "reward = " + reward + '\n' +
+                "futureMovements = " + futureMovement.toString();
+    }
+
+    public int calculateReward(State lastState, State thisState, Player me, Player closestEnemy) {
         int reward = 0;
         if (thisState.getGameStatus() == GameStatus.LOOSE) {
             reward += REWARD_FOR_LOOSING;
@@ -38,12 +44,12 @@ public class Action {
             reward += REWARD_FOR_BITING_OPPONENT_KING;
         }
         reward += REWARD_FOR_KILLING_YOUR_UNIT * me.getDiedUnits().size();
-        reward += REWARD_FOR_KILLING_OPPONENT_UNIT * opponent.getDiedUnits().size();
+        reward += REWARD_FOR_KILLING_OPPONENT_UNIT * closestEnemy.getDiedUnits().size();
         return reward;
     }
 
-    public void initialLastStateRewardInRandomPrecision(State lastState, State thisState, Player me, Player opponent) {
-        int reward = calculateReward(lastState, thisState, me, opponent);
+    public void initialLastStateRewardInRandomPrecision(State lastState, State thisState, Player me, Player closestEnemy) {
+        int reward = calculateReward(lastState, thisState, me, closestEnemy);
         if (this.getReward() != 0) {
             this.setReward((reward + this.getReward()) / 2);
         } else {

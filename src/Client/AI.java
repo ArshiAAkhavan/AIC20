@@ -13,6 +13,7 @@ import java.util.Map;
  */
 
 public class AI {
+    private Player closestEnemy;
     private State lastState;
     private Action lastAction;
     private Random random = new Random();
@@ -20,6 +21,7 @@ public class AI {
     public void pick(World world) {
         System.out.println("random pick started");
 
+        setClosestEnemy(world, world.getMe().getPlayerId());
         List<BaseUnit> myRandomHand = new ArrayList<>();
 
         // choosing random hand
@@ -31,22 +33,24 @@ public class AI {
         world.getMe().setHand(myRandomHand);
 
         //making initial state
-        lastState = new State(world);
+        lastState = new State(world, closestEnemy);
     }
 
     public void turn(World world) {
         System.out.println("turn started: " + world.getCurrentTurn());
 
         // update last state reward
-        State thisState = new State(world);
-        if(lastAction!=null)
-           lastAction.initialLastStateRewardInRandomPrecision(lastState, thisState, world.getMe(), world.getFirstEnemy());
+        State thisState = new State(world, closestEnemy);
+        if (lastAction != null)
+            lastAction.initialLastStateRewardInRandomPrecision(lastState, thisState, world.getMe(), closestEnemy);
 
         // set random action
         Action randomAction = thisState.getActions().get(random.nextInt(thisState.getActions().size()));
+
         // target for units is king
+        int minPathID = calculateMinPathID(world.getFriend().getPathsFromPlayer());
         for (Integer unitID : randomAction.getFutureMovement()) {
-            world.putUnit(unitID, world.getShortestPathToCell(world.getMe(), world.getFirstEnemy().getKing().getCenter()));
+            world.putUnit(unitID, world.getMe().getPathsFromPlayer().get(minPathID));
         }
 
         // update args
@@ -57,5 +61,38 @@ public class AI {
     public void end(World world, Map<Integer, Integer> scores) {
         System.out.println("end started");
         System.out.println("My score: " + scores.get(world.getMe().getPlayerId()));
+    }
+
+    public void setClosestEnemy(World world, int myId) {
+        switch (myId) {
+            case 0:
+                closestEnemy = world.getPlayerById(3);
+                break;
+            case 1:
+                closestEnemy = world.getPlayerById(2);
+                break;
+            case 2:
+                closestEnemy = world.getPlayerById(1);
+                break;
+            case 3:
+                closestEnemy = world.getPlayerById(0);
+                break;
+        }
+    }
+    public int calculateMinPathID(List<Path> paths){
+        int minLength = Integer.MAX_VALUE;
+        int minPathID = 0;
+        for (int j = 0; j < paths.size(); j++) {
+            int pathLength = 0;
+            for (int i = 0; i <paths.get(j).getCells().size(); i++) {
+                pathLength++;
+            }
+            System.out.printf("%d ", pathLength);
+            if (minLength > pathLength) {
+                minLength = pathLength;
+                minPathID = j;
+            }
+        }
+        return minPathID;
     }
 }
