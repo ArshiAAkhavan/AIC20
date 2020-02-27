@@ -1,29 +1,60 @@
 package Client;
 
+import Client.Model.Player;
 import Client.Model.Unit;
 import Client.Model.World;
 
 import static Client.Constants.*;
+import static Client.GameStatus.*;
 
 import java.util.ArrayList;
 
 public class State {
-    private int kingHP;
+    private int myKingHP;
     private int AP;
     private int opponentKingHP;
+    private GameStatus gameStatus;
     private ArrayList<MapUnit> mapUnits;
     private ArrayList<Action> actions;
 
     public State(World world) {
-        this.kingHP = world.getMe().getKing().getHp() / KING_HP_DELIMITER + 1;
-        this.AP = world.getMe().getAp();
+        this.myKingHP = world.getMe().getKing().getHp() / KING_HP_DELIMITER + 1;
         this.opponentKingHP = world.getFirstEnemy().getHp() / KING_HP_DELIMITER + 1;
+
+        this.gameStatus = setGameStatusForSingleGame(world.getMe().getKing().getHp(), world.getFirstEnemy().getKing().getHp(), world.getCurrentTurn());
+
+        this.AP = world.getMe().getAp();
+
         mapUnits = new ArrayList<>();
         for (Unit unit : world.getMap().getUnits()) {
             mapUnits.add(new MapUnit(unit, world));
         }
+
         actions = new ArrayList<>();
-        //todo set initial actions
+        calculateFutureActions(world.getMe(), actions);
+    }
+
+    public void calculateFutureActions(Player player, ArrayList<Action> actions) {
+        for (int i = 0; i < player.getHand().size(); i++) {
+            //single using unit
+            if (player.getAp() >= player.getHand().get(i).getAp()) {
+                actions.add(new Action(player.getHand().get(i).getAp()));
+            }
+            for (int j = i + 1; j < player.getHand().size(); j++) {
+                //double using unit
+                if (player.getAp() >= player.getHand().get(i).getAp() + player.getHand().get(j).getAp()) {
+                    actions.add(new Action(player.getHand().get(i).getAp(), player.getHand().get(j).getAp()));
+                }
+                for (int k = j + 1; k < player.getHand().size(); k++) {
+                    //triple using unit
+                    if (player.getAp() >= player.getHand().get(i).getAp() + player.getHand().get(j).getAp() + player.getHand().get(k).getAp()) {
+                        actions.add(new Action(player.getHand().get(i).getAp(), player.getHand().get(j).getAp(), player.getHand().get(k).getAp()));
+                    }
+                }
+            }
+        }
+        //dont using unit
+        actions.add(new Action());
     }
 
     public int getOpponentKingHP() {
@@ -34,12 +65,12 @@ public class State {
         this.opponentKingHP = opponentKingHP;
     }
 
-    public int getKingHP() {
-        return kingHP;
+    public int getMyKingHP() {
+        return myKingHP;
     }
 
-    public void setKingHP(int kingHP) {
-        this.kingHP = kingHP;
+    public void setMyKingHP(int myKingHP) {
+        this.myKingHP = myKingHP;
     }
 
     public int getAP() {
@@ -64,5 +95,13 @@ public class State {
 
     public void setActions(ArrayList<Action> actions) {
         this.actions = actions;
+    }
+
+    public GameStatus getGameStatus() {
+        return gameStatus;
+    }
+
+    public void setGameStatus(GameStatus gameStatus) {
+        this.gameStatus = gameStatus;
     }
 }
