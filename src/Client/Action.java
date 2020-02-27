@@ -1,5 +1,7 @@
 package Client;
 
+import Client.Model.Player;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -23,8 +25,8 @@ public class Action {
         this.futureMovement = new ArrayList<>();
     }
 
-    public int calculateReward(State lastState, State thisState) {
-        int reward = 0, lastStateUnitsRate = 0, thisStateUnitsRate = 0;
+    public int calculateReward(State lastState, State thisState, Player me, Player opponent) {
+        int reward = 0;
 
         if (thisState.getGameStatus() == GameStatus.LOOSE) {
             reward += REWARD_FOR_LOOSING;
@@ -36,23 +38,13 @@ public class Action {
         } else if (thisState.getOpponentKingHP() < lastState.getOpponentKingHP()) {
             reward += REWARD_FOR_BITING_OPPONENT_KING;
         }
-
-        for (MapUnit mapUnit : lastState.getMapUnits()) {
-            lastStateUnitsRate += mapUnit.getHazardOrEffectivenessRate();
-        }
-        for (MapUnit mapUnit : thisState.getMapUnits()) {
-            thisStateUnitsRate += mapUnit.getHazardOrEffectivenessRate();
-        }
-        if (thisStateUnitsRate > lastStateUnitsRate) {
-            reward += REWARD_FOR_BETTER_MAP_SITUATION;
-        } else {
-            reward += REWARD_FOR_WORSE_MAP_SITUATION;
-        }
+        reward += REWARD_FOR_KILLING_YOUR_UNIT * me.getDiedUnits().size();
+        reward += REWARD_FOR_KILLING_OPPONENT_UNIT * opponent.getDiedUnits().size();
         return reward;
     }
 
-    public void initialLastStateRewardInRandomPrecision(State lastState, State thisState) {
-        int reward = calculateReward(lastState, thisState);
+    public void initialLastStateRewardInRandomPrecision(State lastState, State thisState, Player me, Player opponent) {
+        int reward = calculateReward(lastState, thisState, me, opponent);
         if (this.getReward() != 0) {
             this.setReward((reward + this.getReward()) / 2);
         } else {
