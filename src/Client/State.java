@@ -38,17 +38,17 @@ public class State {
         for (int i = 0; i < player.getHand().size(); i++) {
             //single using unit
             if (player.getAp() >= player.getHand().get(i).getAp()) {
-                actions.add(new Action(player.getHand().get(i).getAp()));
+                actions.add(new Action(player.getHand().get(i).getTypeId()));
             }
             for (int j = i + 1; j < player.getHand().size(); j++) {
                 //double using unit
                 if (player.getAp() >= player.getHand().get(i).getAp() + player.getHand().get(j).getAp()) {
-                    actions.add(new Action(player.getHand().get(i).getAp(), player.getHand().get(j).getAp()));
+                    actions.add(new Action(player.getHand().get(i).getTypeId(), player.getHand().get(j).getTypeId()));
                 }
                 for (int k = j + 1; k < player.getHand().size(); k++) {
                     //triple using unit
                     if (player.getAp() >= player.getHand().get(i).getAp() + player.getHand().get(j).getAp() + player.getHand().get(k).getAp()) {
-                        actions.add(new Action(player.getHand().get(i).getAp(), player.getHand().get(j).getAp(), player.getHand().get(k).getAp()));
+                        actions.add(new Action(player.getHand().get(i).getTypeId(), player.getHand().get(j).getTypeId(), player.getHand().get(k).getTypeId()));
                     }
                 }
             }

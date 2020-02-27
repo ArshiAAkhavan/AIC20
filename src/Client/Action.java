@@ -27,7 +27,6 @@ public class Action {
 
     public int calculateReward(State lastState, State thisState, Player me, Player opponent) {
         int reward = 0;
-
         if (thisState.getGameStatus() == GameStatus.LOOSE) {
             reward += REWARD_FOR_LOOSING;
         } else if (thisState.getMyKingHP() < lastState.getMyKingHP()) {

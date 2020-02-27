@@ -13,87 +13,45 @@ import java.util.Map;
  */
 
 public class AI {
-    private int rows;
-    private int cols;
+    private State lastState;
+    private Action lastAction;
     private Random random = new Random();
-    private Path pathForMyUnits;
 
     public void pick(World world) {
-        System.out.println("pick started");
+        System.out.println("random pick started");
 
-        // preprocess
-        Client.Model.Map map = world.getMap();
-        rows = map.getRowNum();
-        cols = map.getColNum();
+        List<BaseUnit> myRandomHand = new ArrayList<>();
 
-        List<BaseUnit> allBaseUnits = world.getAllBaseUnits();
-        List<BaseUnit> myDeck = new ArrayList<>();
-
-        // choosing all flying units
-        for (BaseUnit baseUnit : allBaseUnits) {
-            if (baseUnit.isFlying())
-                myDeck.add(baseUnit);
+        // choosing random hand
+        for (int i = 0; i < world.getGameConstants().getHandSize(); i++) {
+            myRandomHand.add(world.getBaseUnitById(random.nextInt(world.getAllBaseUnits().size())));
         }
 
         // picking the chosen hand - rest of the hand will automatically be filled with random baseUnits
-        world.chooseHand(myDeck);
+        world.getMe().setHand(myRandomHand);
 
-        //other preprocess
-        pathForMyUnits = world.getFriend().getPathsFromPlayer().get(0);
+        //making initial state
+        lastState = new State(world);
     }
 
     public void turn(World world) {
         System.out.println("turn started: " + world.getCurrentTurn());
 
-        Player myself = world.getMe();
-        int maxAp = world.getGameConstants().getMaxAP();
+        // update last state reward
+        State thisState = new State(world);
+        if(lastAction!=null)
+           lastAction.initialLastStateRewardInRandomPrecision(lastState, thisState, world.getMe(), world.getFirstEnemy());
 
-        // play all of hand once your ap reaches maximum. if ap runs out, putUnit doesn't do anything
-        if (myself.getAp() == maxAp) {
-            for (BaseUnit baseUnit : myself.getHand())
-                world.putUnit(baseUnit, pathForMyUnits);
+        // set random action
+        Action randomAction = thisState.getActions().get(random.nextInt(thisState.getActions().size()));
+        // target for units is king
+        for (Integer unitID : randomAction.getFutureMovement()) {
+            world.putUnit(unitID, world.getShortestPathToCell(world.getMe(), world.getFirstEnemy().getKing().getCenter()));
         }
 
-        // this code tries to cast the received spell
-        Spell receivedSpell = world.getReceivedSpell();
-        if (receivedSpell != null) {
-            if (receivedSpell.isAreaSpell()) {
-                switch (receivedSpell.getTarget()) {
-                    case ENEMY:
-                        List<Unit> enemyUnits = world.getFirstEnemy().getUnits();
-                        if (!enemyUnits.isEmpty())
-                            world.castAreaSpell(enemyUnits.get(0).getCell(), receivedSpell);
-                        break;
-                    case ALLIED:
-                        List<Unit> friendUnits = world.getFriend().getUnits();
-                        if (!friendUnits.isEmpty())
-                            world.castAreaSpell(friendUnits.get(0).getCell(), receivedSpell);
-                        break;
-                    case SELF:
-                        List<Unit> myUnits = myself.getUnits();
-                        if (!myUnits.isEmpty())
-                            world.castAreaSpell(myUnits.get(0).getCell(), receivedSpell);
-                }
-            } else {
-                List<Unit> myUnits = myself.getUnits();
-                if (!myUnits.isEmpty()) {
-                    Unit unit = myUnits.get(0);
-                    List<Path> myPaths = myself.getPathsFromPlayer();
-                    Path path = myPaths.get(random.nextInt(myPaths.size()));
-                    int size = path.getCells().size();
-                    Cell cell = path.getCells().get((size + 1) / 2);
-
-                    world.castUnitSpell(unit, path, cell, receivedSpell);
-                }
-            }
-        }
-
-        // this code tries to upgrade damage of first unit. in case there's no damage token, it tries to upgrade range
-        if (myself.getUnits().size() != 0) {
-            Unit unit = myself.getUnits().get(0);
-            world.upgradeUnitDamage(unit);
-            world.upgradeUnitRange(unit);
-        }
+        // update args
+        lastAction = randomAction;
+        lastState = thisState;
     }
 
     public void end(World world, Map<Integer, Integer> scores) {
