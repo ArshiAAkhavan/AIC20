@@ -18,8 +18,6 @@ public class AI {
     private Action lastAction;
     private Random random = new Random();
     private HashMap<String, State> transitionTable = new HashMap<>();
-    private Object readLock = new Object();
-    private Object writeLock = new Object();
 
     public void pick(World world) {
         System.out.println("random pick started");
@@ -126,11 +124,11 @@ public class AI {
 
     public HashMap<String,State> loadTransitionTableFromFile(){
         HashMap<String,State> oldTransitionTable = new HashMap<>();
-
+        //todo
         return oldTransitionTable;
     }
 
     public void saveTransitionTableInToFile(){
-
+        //todo
     }
 }
