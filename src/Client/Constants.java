@@ -16,4 +16,5 @@ public class Constants {
     public static int FINAL_TURN = 100;
     public static int LOOSE_HP_PEAK = 10;
     public static int WIN_OPPONENT_HP_PEAK = 20;
+    public static String TRANSITION_TABLE_FILE_PATH = "";
 }

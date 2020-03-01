@@ -17,6 +17,9 @@ public class AI {
     private State lastState;
     private Action lastAction;
     private Random random = new Random();
+    private HashMap<String, State> transitionTable = new HashMap<>();
+    private Object readLock = new Object();
+    private Object writeLock = new Object();
 
     public void pick(World world) {
         System.out.println("random pick started");
@@ -34,6 +37,9 @@ public class AI {
 
         //making initial state
         lastState = new State(world, closestEnemy);
+
+        //getting transition table ready
+        transitionTable = loadTransitionTableFromFile();
     }
 
     public void turn(World world) {
@@ -56,11 +62,15 @@ public class AI {
         // update args
         lastAction = randomAction;
         lastState = thisState;
+
+        // put in hashMap
+        updateTransitionTable(thisState);
     }
 
     public void end(World world, Map<Integer, Integer> scores) {
         System.out.println("end started");
         System.out.println("My score: " + scores.get(world.getMe().getPlayerId()));
+        saveTransitionTableInToFile();
     }
 
     public void setClosestEnemy(World world, int myId) {
@@ -79,12 +89,13 @@ public class AI {
                 break;
         }
     }
-    public int calculateMinPathID(List<Path> paths){
+
+    public int calculateMinPathID(List<Path> paths) {
         int minLength = Integer.MAX_VALUE;
         int minPathID = 0;
         for (int j = 0; j < paths.size(); j++) {
             int pathLength = 0;
-            for (int i = 0; i <paths.get(j).getCells().size(); i++) {
+            for (int i = 0; i < paths.get(j).getCells().size(); i++) {
                 pathLength++;
             }
             System.out.printf("%d ", pathLength);
@@ -94,5 +105,32 @@ public class AI {
             }
         }
         return minPathID;
+    }
+
+    public static int calculateShortestPath(World world, Player player, Unit unit) {
+        int length = 0;
+        for (Cell cell : world.getShortestPathToCell(player, unit.getCell()).getCells()) {
+            length++;
+        }
+        return length;
+    }
+
+    public void updateTransitionTable(State newState){
+        State existedState = transitionTable.get(newState.getHashKey());
+        if (existedState != null) {
+            existedState.mergeActionsInRandomPrecision(newState);
+        } else {
+            transitionTable.put(newState.getHashKey(), newState);
+        }
+    }
+
+    public HashMap<String,State> loadTransitionTableFromFile(){
+        HashMap<String,State> oldTransitionTable = new HashMap<>();
+
+        return oldTransitionTable;
+    }
+
+    public void saveTransitionTableInToFile(){
+
     }
 }

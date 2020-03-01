@@ -16,5 +16,19 @@ public enum GameStatus {
         return GameStatus.UNFINISHED;
     }
 
+
+    @Override
+    public String toString() {
+        switch (this){
+            case WIN:
+                return "W";
+            case LOOSE:
+                return "L";
+            case DRAW:
+                return "D";
+            default:
+                return "U";
+        }
+    }
 }
 

@@ -1,6 +1,7 @@
 package Client;
 
 import Client.Model.Player;
+import static Client.UsefulMethods.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,11 @@ public class Action {
         return "probability = " + probability + '\n' +
                 "reward = " + reward + '\n' +
                 "futureMovements = " + futureMovement.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return compareTwoArrayList(this.futureMovement, ((Action) obj).futureMovement);
     }
 
     public int calculateReward(State lastState, State thisState, Player me, Player closestEnemy) {

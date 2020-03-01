@@ -6,8 +6,13 @@ import Client.Model.World;
 
 import static Client.Constants.*;
 import static Client.GameStatus.*;
+import static Client.UsefulMethods.*;
+import static Client.MapUnit.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class State {
     private int myKingHP;
@@ -55,6 +60,35 @@ public class State {
         }
         //dont using unit
         actions.add(new Action());
+    }
+
+    public String getHashKey() {
+        return myKingHP + '.' + AP + '.' + opponentKingHP + '.' + gameStatus.toString() + '.' + showArrayList(mapUnits);
+    }
+
+    public void mergeActionsInRandomPrecision(State newState) {
+        for (Action newAction : newState.actions) {
+            int i;
+            for (i = 0; i < this.actions.size(); i++) {
+                if (newAction.equals(this.actions.get(i))) {
+                    this.actions.get(i).setProbability((this.getActions().get(i).getProbability() + newAction.getProbability()) / 2);
+                    break;
+                }
+            }
+            if (i >= this.actions.size()) {
+                this.actions.add(newAction);
+            }
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.myKingHP == ((State) obj).myKingHP &&
+                this.AP == ((State) obj).AP &&
+                this.opponentKingHP == ((State) obj).opponentKingHP &&
+                this.gameStatus == ((State) obj).gameStatus &&
+                compareTwoArrayList(mapUnits, ((State) obj).mapUnits) &&
+                compareTwoArrayList(actions, ((State) obj).actions);
     }
 
     public String toString() {
