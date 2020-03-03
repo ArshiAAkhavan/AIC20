@@ -1,7 +1,14 @@
 package Client;
 
 import Client.Model.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
+import static Client.Constants.*;
+
+import java.io.*;
+import java.net.Socket;
 import java.util.*;
 import java.util.Map;
 
@@ -18,6 +25,7 @@ public class AI {
     private Action lastAction;
     private Random random = new Random();
     private HashMap<String, State> transitionTable = new HashMap<>();
+    private Socket IOHandler;
 
     public void pick(World world) {
         System.out.println("random pick started");
@@ -37,7 +45,11 @@ public class AI {
         lastState = new State(world, closestEnemy);
 
         //getting transition table ready
-        transitionTable = loadTransitionTableFromFile();
+//        try {
+//            transitionTable = loadTransitionTableFromFile();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void turn(World world) {
@@ -68,7 +80,11 @@ public class AI {
     public void end(World world, Map<Integer, Integer> scores) {
         System.out.println("end started");
         System.out.println("My score: " + scores.get(world.getMe().getPlayerId()));
-        saveTransitionTableInToFile();
+//        try {
+//            saveTransitionTableInToFile();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void setClosestEnemy(World world, int myId) {
@@ -113,7 +129,7 @@ public class AI {
         return length;
     }
 
-    public void updateTransitionTable(State newState){
+    public void updateTransitionTable(State newState) {
         State existedState = transitionTable.get(newState.getHashKey());
         if (existedState != null) {
             existedState.mergeActionsInRandomPrecision(newState);
@@ -122,13 +138,38 @@ public class AI {
         }
     }
 
-    public HashMap<String,State> loadTransitionTableFromFile(){
-        HashMap<String,State> oldTransitionTable = new HashMap<>();
-        //todo
-        return oldTransitionTable;
+    public HashMap<String, State> loadTransitionTableFromFile() throws IOException {
+        IOHandler = new Socket("localhost", IO_HANDLER_PORT);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(IOHandler.getInputStream()));
+        BufferedWriter order = new BufferedWriter(new OutputStreamWriter(IOHandler.getOutputStream()));
+        Gson gson = new Gson();
+        order.write(IO_READ_ORDER);
+        order.flush();
+        StringBuilder map = new StringBuilder();
+        while (!map.toString().equals("finish")) {
+            map.append(reader.readLine());
+        }
+        IOHandler.close();
+        return gson.fromJson(map.toString(), new TypeToken<HashMap<String, State>>() {
+        }.getType());
     }
 
-    public void saveTransitionTableInToFile(){
-        //todo
+    public void saveTransitionTableInToFile() throws IOException {
+        IOHandler = new Socket("localhost", IO_HANDLER_PORT);
+        BufferedWriter order = new BufferedWriter(new OutputStreamWriter(IOHandler.getOutputStream()));
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//        HashMap<String, State> oldTable = loadTransitionTableFromFile();
+//        oldTable.putAll(transitionTable);
+        order.write(Integer.parseInt(IO_WRITE_ORDER));
+//        String[] map = gson.toJson(oldTable, new TypeToken<HashMap<String, State>>() {
+//        }.getType()).split("\n");
+        String[] map = gson.toJson(transitionTable, new TypeToken<HashMap<String, State>>() {}.getType()).split("\n");
+        for (String s : map) {
+            order.write(s);
+            order.flush();
+        }
+        order.write("\n" + IO_EOF);
+        order.flush();
+        IOHandler.close();
     }
 }

@@ -10,9 +10,6 @@ import static Client.UsefulMethods.*;
 import static Client.MapUnit.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 
 public class State {
     private int myKingHP;
