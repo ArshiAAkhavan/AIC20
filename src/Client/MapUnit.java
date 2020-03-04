@@ -6,29 +6,28 @@ import Client.Model.World;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 import static Client.Constants.*;
 import static Client.AI.*;
 
 public class MapUnit implements Comparable<MapUnit>{
-    private int hazardOrEffectivenessRate;
+    private int HER;// hazard or effectiveness rate
 
     public MapUnit(Unit unit, World world, Player closestEnemy){ // first we calculate the hazard rate or effectiveness rate of map units
-        hazardOrEffectivenessRate = (calculateDistanceRate(unit , world ,closestEnemy) * calculateHPRate(unit) * calculateDamageRate(unit) * calculateRangeRate(unit) * calculateTargetTypeRate(unit)) / MAP_UNIT_HAZARD_EFFECTIVENESS_DELIMITER + 1;
+        HER = (calculateDistanceRate(unit , world ,closestEnemy) * calculateHPRate(unit) * calculateDamageRate(unit) * calculateRangeRate(unit) * calculateTargetTypeRate(unit)) / MAP_UNIT_HAZARD_EFFECTIVENESS_DELIMITER + 1;
         if (unit.getPlayerId() == closestEnemy.getPlayerId()) {
-            hazardOrEffectivenessRate *= -1;
+            HER *= -1;
         }
     }
 
     @Override
     public int compareTo(MapUnit o) {
-        return Integer.compare(this.getHazardOrEffectivenessRate(), (o.getHazardOrEffectivenessRate()));
+        return Integer.compare(this.getHER(), (o.getHER()));
     }
 
     @Override
     public boolean equals(Object obj) {
-        return this.hazardOrEffectivenessRate == ((MapUnit) obj).hazardOrEffectivenessRate;
+        return this.HER == ((MapUnit) obj).HER;
     }
 
     public int calculateDistanceRate(Unit unit, World world, Player closestEnemy) {
@@ -77,18 +76,18 @@ public class MapUnit implements Comparable<MapUnit>{
         return (unit.getRange() + unit.getRangeLevel()) / MAP_UNIT_RANGE_RATE_DELIMITER + 1;
     }
 
-    public int getHazardOrEffectivenessRate() {
-        return hazardOrEffectivenessRate;
+    public int getHER() {
+        return HER;
     }
 
-    public void setHazardOrEffectivenessRate(int hazardOrEffectivenessRate) {
-        this.hazardOrEffectivenessRate = hazardOrEffectivenessRate;
+    public void setHER(int HER) {
+        this.HER = HER;
     }
 
     public static int calculateMapUnitsSituation(ArrayList<MapUnit> mapUnits) {
         int result = 0;
         for (MapUnit mapUnit : mapUnits) {
-            result += mapUnit.getHazardOrEffectivenessRate();
+            result += mapUnit.getHER();
         }
         return result;
     }
@@ -97,7 +96,7 @@ public class MapUnit implements Comparable<MapUnit>{
         StringBuilder result= new StringBuilder("[ ");
         Collections.sort(mapUnits);
         for (MapUnit mapUnit : mapUnits) {
-            result.append(mapUnit.getHazardOrEffectivenessRate() + ' ');
+            result.append(mapUnit.getHER() + ' ');
         }
         return result + "]";
     }

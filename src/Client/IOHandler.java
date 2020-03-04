@@ -3,53 +3,82 @@ package Client;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 import static Client.Constants.*;
+import static Client.UsefulMethods.*;
 
 public class IOHandler {
-    private static BufferedReader inputStream;
-    private static BufferedWriter outputStream;
-    private static Socket handler;
+    private static int numberOfFinishedClients = 0;
 
     public static void main(String[] args) throws IOException {
         ServerSocket ss = new ServerSocket(IO_HANDLER_PORT);
-        for (int i = 0; i < 8; i++) {
-            handler = ss.accept();
-            inputStream = new BufferedReader(new InputStreamReader(handler.getInputStream()));
-            outputStream = new BufferedWriter(new OutputStreamWriter(handler.getOutputStream()));
-            if (inputStream.read() ==  Byte.parseByte(IO_READ_ORDER)) {
-                readFromFileAndSend();
-            } else {
-                receiveAndWriteInFile();
+        System.out.println("IO Started");
+        while (numberOfFinishedClients < 4) {
+            Socket handler = ss.accept();
+            Scanner inputStream = new Scanner(handler.getInputStream());
+            OutputStream outputStream = handler.getOutputStream();
+            try {
+                while (true) {
+                    try {
+                        if (inputStream.hasNext()) {
+                            String query = inputStream.nextLine();
+                            System.out.println(query.substring(1));
+                            if (query.getBytes()[0] == IO_MESSAGE_VIEWER) {
+                                continue;
+                            }
+                            if (query.getBytes()[0] == IO_CLIENT_DONE) {
+                                numberOfFinishedClients++;
+                                handler.close();
+                                break;
+                            }
+                            if (query.getBytes()[0] == IO_CLIENT_CLOSE) {
+                                handler.close();
+                                break;
+                            }
+                            if (query.getBytes()[0] == IO_READ_ORDER) {
+                                readFromFileAndSend(outputStream);
+                                continue;
+                            }
+                            if (query.getBytes()[0] == IO_WRITE_ORDER) {
+                                receiveAndWriteInFile(inputStream);
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                break;
             }
-            handler.close();
         }
+        System.out.println("IO Ended");
         ss.close();
+
     }
 
-    public static void readFromFileAndSend() throws IOException {
+    public static void readFromFileAndSend(OutputStream outputStream) throws IOException {
         File file = new File(TRANSITION_TABLE_FILE_PATH);
-        BufferedReader fileReader = new BufferedReader(new FileReader(file));
-        String in = "";
-        while ((in = fileReader.readLine()) != null) {
-            outputStream.write(in);
-            outputStream.flush();
+        Scanner fileReader = new Scanner(new FileReader(file));
+        while (fileReader.hasNext()) {
+            sendDataToSomewhere(outputStream,fileReader.nextLine());
         }
-        outputStream.write("\n"+IO_EOF);
-        outputStream.flush();
+        sendDataToSomewhere(outputStream,IO_EOF);
         fileReader.close();
     }
 
-    public static void receiveAndWriteInFile() throws IOException {
+    public static void receiveAndWriteInFile(Scanner inputStream) throws IOException {
         File file = new File(TRANSITION_TABLE_FILE_PATH);
         BufferedWriter fileWriter = new BufferedWriter(new FileWriter(file));
         String in = "";
         while (true) {
-            in = inputStream.readLine();
+            in = inputStream.nextLine();
             if (in.equals(IO_EOF)) {
                 break;
             } else {
-                fileWriter.write(in);
+                fileWriter.write(in + "\n");
             }
         }
         fileWriter.close();

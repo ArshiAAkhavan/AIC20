@@ -9,8 +9,10 @@ import static Client.Constants.*;
 
 public class Runner extends Thread {
     private String[] commands;
+    private String console;
 
-    public Runner(String... commands) {
+    public Runner(String console, String... commands) {
+        this.console = console;
         this.commands = commands;
     }
 
@@ -18,7 +20,7 @@ public class Runner extends Thread {
     public void run() {
         Process p;
         try {
-            p = Runtime.getRuntime().exec(CMD);
+            p = Runtime.getRuntime().exec(console);
             new Thread(new SyncPipe(p.getErrorStream(), System.err)).start();
             new Thread(new SyncPipe(p.getInputStream(), System.out)).start();
             PrintWriter stdin = new PrintWriter(p.getOutputStream());

@@ -1,6 +1,7 @@
 package Client;
 
 import Client.Model.Player;
+
 import static Client.UsefulMethods.*;
 
 import java.util.ArrayList;
@@ -10,31 +11,31 @@ import java.util.stream.Collectors;
 import static Client.Constants.*;
 
 public class Action {
-    private double probability;
-    private int reward;
-    private ArrayList<Integer> futureMovement;
+    private double P;
+    private int R;
+    private ArrayList<Integer> FM;// future movements
 
     public Action(int... futureMovements) {
-        probability = 1.0;
-        this.reward = 0;
-        this.futureMovement = new ArrayList<Integer>(Arrays.stream(futureMovements).boxed().collect(Collectors.toList()));
+        P = 1.0;
+        this.R = 0;
+        this.FM = new ArrayList<Integer>(Arrays.stream(futureMovements).boxed().collect(Collectors.toList()));
     }
 
     public Action() {
-        probability = 1.0;
-        this.reward = 0;
-        this.futureMovement = new ArrayList<>();
+        P = 1.0;
+        this.R = 0;
+        this.FM = new ArrayList<>();
     }
 
     public String toString() {
-        return "probability = " + probability + '\n' +
-                "reward = " + reward + '\n' +
-                "futureMovements = " + futureMovement.toString();
+        return "probability = " + P + '\n' +
+                "reward = " + R + '\n' +
+                "futureMovements = " + FM.toString();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return compareTwoArrayList(this.futureMovement, ((Action) obj).futureMovement);
+        return compareTwoArrayList(this.FM, ((Action) obj).FM);
     }
 
     public int calculateReward(State lastState, State thisState, Player me, Player closestEnemy) {
@@ -46,7 +47,7 @@ public class Action {
         }
         if (thisState.getGameStatus() == GameStatus.WIN) {
             reward += REWARD_FOR_WINNING;
-        } else if (thisState.getOpponentKingHP() < lastState.getOpponentKingHP()) {
+        } else if (thisState.getOppKingHP() < lastState.getOppKingHP()) {
             reward += REWARD_FOR_BITING_OPPONENT_KING;
         }
         reward += REWARD_FOR_KILLING_YOUR_UNIT * me.getDiedUnits().size();
@@ -56,34 +57,34 @@ public class Action {
 
     public void initialLastStateRewardInRandomPrecision(State lastState, State thisState, Player me, Player closestEnemy) {
         int reward = calculateReward(lastState, thisState, me, closestEnemy);
-        if (this.getReward() != 0) {
-            this.setReward((reward + this.getReward()) / 2);
+        if (this.getR() != 0) {
+            this.setR((reward + this.getR()) / 2);
         } else {
-            this.setReward(reward);
+            this.setR(reward);
         }
     }
 
-    public double getProbability() {
-        return probability;
+    public double getP() {
+        return P;
     }
 
-    public void setProbability(double probability) {
-        this.probability = probability;
+    public void setP(double p) {
+        this.P = p;
     }
 
-    public int getReward() {
-        return reward;
+    public int getR() {
+        return R;
     }
 
-    public void setReward(int reward) {
-        this.reward = reward;
+    public void setR(int r) {
+        this.R = r;
     }
 
-    public ArrayList<Integer> getFutureMovement() {
-        return futureMovement;
+    public ArrayList<Integer> getFM() {
+        return FM;
     }
 
-    public void setFutureMovement(ArrayList<Integer> futureMovement) {
-        this.futureMovement = futureMovement;
+    public void setFM(ArrayList<Integer> FM) {
+        this.FM = FM;
     }
 }
