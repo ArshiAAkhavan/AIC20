@@ -1,9 +1,6 @@
 package Client;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,7 +19,7 @@ public class TableHandler {
         ServerSocket ss = new ServerSocket(TABLE_HANDLER_PORT);
         setTransitionTable(ss);
         System.out.println("Table Size: " + transitionTable.size());
-
+        showTable();
         while (numberOfFinishedClients < 4) {
             Socket handler = ss.accept();
             Scanner inputStream = new Scanner(handler.getInputStream());
@@ -75,23 +72,23 @@ public class TableHandler {
     public static HashMap<String, State> loadTransitionTableFromFile() throws FileNotFoundException {
         File file = new File(TRANSITION_TABLE_FILE_PATH);
         Scanner fileReader = new Scanner(new FileReader(file));
-        StringBuilder jsonTable = new StringBuilder("");
+        HashMap<String, State> map = new HashMap<>();
+        Gson gson = new Gson();
+        String[] jsonState;
         while (fileReader.hasNext()) {
-            jsonTable.append(fileReader.nextLine());
+            jsonState = fileReader.nextLine().split("\\|");
+            map.put(jsonState[0], gson.fromJson(jsonState[1], State.class));
         }
         fileReader.close();
-        return new Gson().fromJson(jsonTable.toString(), new TypeToken<HashMap<String, State>>() {
-        }.getType());
+        return map;
     }
 
     public static void writeTransitionTableInFile() throws IOException {
         File file = new File(TRANSITION_TABLE_FILE_PATH);
         BufferedWriter fileWriter = new BufferedWriter(new FileWriter(file));
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String[] maps = gson.toJson(transitionTable, new TypeToken<HashMap<String, State>>() {
-        }.getType()).split("\n");
-        for (String s : maps) {
-            fileWriter.write(s + "\n");
+        Gson gson = new Gson();
+        for (Map.Entry<String, State> entry : transitionTable.entrySet()) {
+            fileWriter.write(entry.getKey() + "|" + gson.toJson(entry.getValue(), State.class) + "\n");
         }
         fileWriter.close();
     }
