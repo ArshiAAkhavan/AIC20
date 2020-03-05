@@ -29,7 +29,9 @@ public class State {
 
         mapUnits = new ArrayList<>();
         for (Unit unit : world.getMap().getUnits()) {
-            mapUnits.add(new MapUnit(unit, world, closestEnemy));
+            if (unit.getPlayerId() == closestEnemy.getPlayerId() || unit.getPlayerId() == world.getMe().getPlayerId()) {
+                mapUnits.add(new MapUnit(unit, world, closestEnemy));
+            }
         }
 
         actions = new ArrayList<>();
@@ -60,7 +62,7 @@ public class State {
     }
 
     public String getHashKey() {
-        return myKingHP + '.' + AP + '.' + oppKingHP + '.' + gameStatus.toString() + '.' + showArrayList(mapUnits);
+        return myKingHP + String.valueOf(AP) + oppKingHP + gameStatus.toString() + showArrayList(mapUnits);
     }
 
     public void mergeActionsInRandomPrecision(State newState) {
@@ -68,10 +70,8 @@ public class State {
             int i;
             for (i = 0; i < this.actions.size(); i++) {
                 if (newAction.equals(this.actions.get(i))) {
-                    this.actions.get(i).setP((this.getActions().get(i).getP() + newAction.getP()) / 2);
-                    if (newAction.getR() != 0) {
-                        this.actions.get(i).setR((this.getActions().get(i).getR() + newAction.getR()) / 2);
-                    }
+                    this.actions.get(i).updateReward(newAction.getR());
+                    this.actions.get(i).updateProbability(newAction.getP());
                     break;
                 }
             }

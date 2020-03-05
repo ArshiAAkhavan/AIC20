@@ -22,7 +22,7 @@ public class MapUnit implements Comparable<MapUnit>{
 
     @Override
     public int compareTo(MapUnit o) {
-        return Integer.compare(this.getHER(), (o.getHER()));
+        return this.getHER() - (o.getHER());
     }
 
     @Override
@@ -93,10 +93,10 @@ public class MapUnit implements Comparable<MapUnit>{
     }
 
     public static String showArrayList(ArrayList<MapUnit> mapUnits){
-        StringBuilder result= new StringBuilder("[ ");
+        StringBuilder result= new StringBuilder("[");
         Collections.sort(mapUnits);
         for (MapUnit mapUnit : mapUnits) {
-            result.append(mapUnit.getHER() + ' ');
+            result.append(mapUnit.getHER());
         }
         return result + "]";
     }

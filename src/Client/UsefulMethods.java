@@ -7,6 +7,9 @@ import java.util.ArrayList;
 
 public interface UsefulMethods {
     static <E> boolean compareTwoArrayList(ArrayList<E> array1, ArrayList<E> array2) {
+        if(array1.size()!=array2.size()){
+            return false;
+        }
         ArrayList<E> temp1 = new ArrayList<E>(array1);
         ArrayList<E> temp2 = new ArrayList<E>(array2);
         for (int i = 0; i < temp1.size(); i++) {
